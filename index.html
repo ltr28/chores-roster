@@ -45,7 +45,7 @@
             backdrop-filter: blur(10px);
         }
 
-        .settings-section {
+        .notification-section {
             background: white;
             border-radius: 15px;
             padding: 20px;
@@ -53,59 +53,53 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
 
-        .settings-section h2 {
+        .notification-section h2 {
             margin-bottom: 15px;
             color: #4F46E5;
         }
 
-        .name-inputs {
-            display: grid;
-            gap: 10px;
-            margin-bottom: 15px;
+        .notification-button {
+            background: #10B981;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
         }
 
-        .name-input {
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        .notification-button:hover {
+            background: #059669;
         }
 
-        .name-input label {
-            min-width: 80px;
+        .notification-button:disabled {
+            background: #9CA3AF;
+            cursor: not-allowed;
+        }
+
+        .notification-status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
             font-weight: 500;
         }
 
-        .name-input input {
-            flex: 1;
-            padding: 10px;
-            border: 2px solid #e5e7eb;
-            border-radius: 8px;
-            font-size: 16px;
+        .status-success {
+            background: #D1FAE5;
+            color: #065F46;
         }
 
-        .name-input input:focus {
-            outline: none;
-            border-color: #4F46E5;
+        .status-error {
+            background: #FEE2E2;
+            color: #991B1B;
         }
 
-        .rotation-day {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .rotation-day label {
-            font-weight: 500;
-        }
-
-        .rotation-day select {
-            flex: 1;
-            padding: 10px;
-            border: 2px solid #e5e7eb;
-            border-radius: 8px;
-            font-size: 16px;
-            background: white;
+        .status-info {
+            background: #DBEAFE;
+            color: #1E40AF;
         }
 
         .chores-grid {
@@ -207,38 +201,10 @@
             <button id="installButton" class="install-button">Install App</button>
         </div>
 
-        <div class="settings-section">
-            <h2>👥 People</h2>
-            <div class="name-inputs">
-                <div class="name-input">
-                    <label>Person 1:</label>
-                    <input type="text" id="person1" placeholder="Enter name">
-                </div>
-                <div class="name-input">
-                    <label>Person 2:</label>
-                    <input type="text" id="person2" placeholder="Enter name">
-                </div>
-                <div class="name-input">
-                    <label>Person 3:</label>
-                    <input type="text" id="person3" placeholder="Enter name">
-                </div>
-                <div class="name-input">
-                    <label>Person 4:</label>
-                    <input type="text" id="person4" placeholder="Enter name">
-                </div>
-            </div>
-            <div class="rotation-day">
-                <label>Rotation day:</label>
-                <select id="rotationDay">
-                    <option value="0">Sunday</option>
-                    <option value="1">Monday</option>
-                    <option value="2">Tuesday</option>
-                    <option value="3">Wednesday</option>
-                    <option value="4">Thursday</option>
-                    <option value="5">Friday</option>
-                    <option value="6">Saturday</option>
-                </select>
-            </div>
+        <div class="notification-section">
+            <h2>🔔 Notifications</h2>
+            <button id="enableNotifications" class="notification-button">Enable Weekly Reminders</button>
+            <div id="notificationStatus" class="notification-status hidden"></div>
         </div>
 
         <div class="chores-grid" id="choresGrid"></div>
@@ -252,7 +218,8 @@
             { name: 'Toilets', icon: '🚽' }
         ];
 
-        const people = ['Person 1', 'Person 2', 'Person 3', 'Person 4'];
+        const people = ['Chris', 'Sean', 'Luke', 'Jonathan'];
+        const rotationDay = 0; // Sunday
         let deferredPrompt;
 
         function getWeekStart(rotationDay) {
@@ -281,32 +248,7 @@
             return Math.floor(diff / (7 * 24 * 60 * 60 * 1000));
         }
 
-        function loadSettings() {
-            const savedNames = JSON.parse(localStorage.getItem('peopleNames') || 'null');
-            if (savedNames) {
-                savedNames.forEach((name, i) => {
-                    document.getElementById(`person${i + 1}`).value = name;
-                    people[i] = name;
-                });
-            }
-
-            const savedDay = localStorage.getItem('rotationDay');
-            if (savedDay !== null) {
-                document.getElementById('rotationDay').value = savedDay;
-            }
-        }
-
-        function saveSettings() {
-            const names = people.map((_, i) => {
-                const input = document.getElementById(`person${i + 1}`).value.trim();
-                return input || `Person ${i + 1}`;
-            });
-            localStorage.setItem('peopleNames', JSON.stringify(names));
-            localStorage.setItem('rotationDay', document.getElementById('rotationDay').value);
-        }
-
         function renderChores() {
-            const rotationDay = parseInt(document.getElementById('rotationDay').value);
             const weekStart = getWeekStart(rotationDay);
             const weekNumber = getWeekNumber(weekStart);
             
@@ -332,19 +274,96 @@
             });
         }
 
-        // Event listeners for settings
-        for (let i = 1; i <= 4; i++) {
-            document.getElementById(`person${i}`).addEventListener('input', (e) => {
-                people[i - 1] = e.target.value.trim() || `Person ${i}`;
-                saveSettings();
-                renderChores();
-            });
+        // Notification functionality
+        async function requestNotificationPermission() {
+            const statusDiv = document.getElementById('notificationStatus');
+            const button = document.getElementById('enableNotifications');
+
+            if (!('Notification' in window)) {
+                showStatus('Notifications are not supported in this browser', 'error');
+                button.disabled = true;
+                return;
+            }
+
+            if (Notification.permission === 'granted') {
+                showStatus('Notifications already enabled! ✓', 'success');
+                scheduleNotifications();
+                return;
+            }
+
+            if (Notification.permission === 'denied') {
+                showStatus('Notifications blocked. Please enable in browser settings.', 'error');
+                return;
+            }
+
+            try {
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                    showStatus('Notifications enabled! You\'ll get reminders every Sunday.', 'success');
+                    scheduleNotifications();
+                } else {
+                    showStatus('Notifications permission denied', 'error');
+                }
+            } catch (error) {
+                showStatus('Error requesting notification permission', 'error');
+            }
         }
 
-        document.getElementById('rotationDay').addEventListener('change', () => {
-            saveSettings();
-            renderChores();
-        });
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('notificationStatus');
+            statusDiv.textContent = message;
+            statusDiv.className = `notification-status status-${type}`;
+            statusDiv.classList.remove('hidden');
+        }
+
+        function scheduleNotifications() {
+            // Check every hour if it's Sunday and time to send notifications
+            setInterval(checkAndSendNotifications, 60 * 60 * 1000);
+            // Also check immediately
+            checkAndSendNotifications();
+        }
+
+        function checkAndSendNotifications() {
+            const now = new Date();
+            const isSunday = now.getDay() === 0;
+            const hour = now.getHours();
+            const lastNotification = localStorage.getItem('lastNotificationDate');
+            const today = now.toDateString();
+
+            // Send notification on Sunday at 9 AM (and only once per day)
+            if (isSunday && hour === 9 && lastNotification !== today && Notification.permission === 'granted') {
+                sendWeeklyNotifications();
+                localStorage.setItem('lastNotificationDate', today);
+            }
+        }
+
+        function sendWeeklyNotifications() {
+            const weekStart = getWeekStart(rotationDay);
+            const weekNumber = getWeekNumber(weekStart);
+
+            // Find who has bins this week
+            const binsIndex = chores.findIndex(c => c.name === 'Bins');
+            const binsPersonIndex = (weekNumber + binsIndex) % 4;
+            const binsPerson = people[binsPersonIndex];
+
+            // Send general reminder
+            new Notification('🏠 Chores Roster Reminder', {
+                body: 'New week started! Check your assigned chores.',
+                icon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIj48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgZmlsbD0iIzRGNDZFNSIvPjxwYXRoIGQ9Ik0xMDAgNDBjMCAxNS0xMi41IDI1LTI1IDI1czI1IDEwIDQwIDE0LjUgMTAtNS41IDE0LTI1IDI1LTI1IDI1VjU1YzAgMTUgMTIgMjUgMjUgMjVoNTBjMTUgMCAyNSAxMiAyNSAyNVY0MGMwLTE1LTEyLTIwLTI1LTI1eiIgZmlsbD0iI2ZmZiIvPjxwYXRoIGQ9Ik0xNDAgNThjMCAxMCA4IDggOCA4eTEgMTEgMTEgMTEgMTEgMTFIODVjMTEgMCAxMS04IDExLTE4VjQ2Y3AtMXc2LTItNS00LTRoLTE1Yy0yIDAtMy0xLjUtMy0zdjIgMS00IDUtMyA1eiIgZmlsbD0iI2ZmZiIvPjwvc3ZnPg==',
+                badge: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIj48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgZmlsbD0iIzRGNDZFNSIvPjwvc3ZnPg=='
+            });
+
+            // Send specific reminder for bins
+            setTimeout(() => {
+                new Notification(`🗑️ Bins Reminder for ${binsPerson}`, {
+                    body: `${binsPerson}, don't forget to take out the bins this week!`,
+                    icon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIj48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgZmlsbD0iIzRGNDZFNSIvPjwvc3ZnPg=='
+                });
+            }, 2000);
+        }
+
+        // Notification button listener
+        document.getElementById('enableNotifications').addEventListener('click', requestNotificationPermission);
 
         // PWA Install
         window.addEventListener('beforeinstallprompt', (e) => {
@@ -363,8 +382,13 @@
         });
 
         // Initialize
-        loadSettings();
         renderChores();
+
+        // Check notification permission on load
+        if (Notification.permission === 'granted') {
+            showStatus('Notifications enabled ✓', 'success');
+            scheduleNotifications();
+        }
 
         // Update weekly
         setInterval(() => {
