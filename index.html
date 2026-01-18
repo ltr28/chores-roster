@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#4F46E5">
+    <title>Chores Roster</title>
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkNob3JlcyBSb3N0ZXIiLAogICJzaG9ydF9uYW1lIjogIkNob3JlcyIsCiAgImRlc2NyaXB0aW9uIjogIldlZWtseSBjaG9yZXMgdHJhY2tlciBmb3IgNCBwZW9wbGUiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiI2ZmZmZmZiIsCiAgInRoZW1lX2NvbG9yIjogIiM0RjQ2RTUiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJkYXRhOmltYWdlL3N2Zyt4bWw7YmFzZTY0LFBITjJaeUI0Yld4dWN6MGlhSFIwY0RvdkwzZDNkeTUzTXk1dmNtY3ZNakF3TUM5emRtY2lJSGRwWkhSb1BTSXhPVElpSUdobGFXZG9kRDBpTVRreUlqNDhjbVZqZENCM2FXUjBhRDBpTVRreUlpQm9aV2xuYUhROUlqRTVNaUlnWm1sc2JEMGlJelJHTkRaRk5TSXZQanh3WVhSb0lHUTlJazB4TURBZ05EQmpNQ0F4TlMweE1pNDFJREkxTFRJMUlESTFjekkxSURFd0lEUXdJREUwTGpVZ01UQXROUzQxSURFMExUSTFJREkxTFRJMUlESTFWalUxWXpBZ01UVWdNVElnTWpVZ01qVWdNalZvTlRCak1UVWdNQ0F5TlNBeE1pQXlOU0F5TlZZME1HTXdMVEUxTFRFeUxUSXFMVEkxTFRJMWVtMDNOUzB4TldneE5XTXpJREFnTlNBeUlEVWdOV1l3SURJZ01pQTFJRFVnTldnd01XTXpJREFnTlMweUlEVXROVll6TkhNdE1pMHhMalV0TlMwekxUVXROMGd5TjJNeExUSXVOU0F4TFRVdE15MDFOR2gwTFRFMVl5MHlMalVnTVMwMUlETXROUzAxZWlJZ1ptbHNiRDBpSTJabVppSXZQanh3WVhSb0lHUTlJazB4TkRBZ05UaGpNQ0F4TUNBNElEZ2dPQ0E0ZVRFZ01URWdNVEVnTVRFZ01URWdNVEZJT0RWak1URWdNQ0F4TVMwNElERXhMVEU0VmpRMlkzQXRNV3cyTFRJdE5TMDBMVFJvTFRFMVl5MHlJREF0TXkweExqVXRNeTB6ZGRJZ01TMDBJRFV0TXlBMWVpSWdabWxzYkQwaUkyWm1aaUl2UGp3dmMzWm5QZz09IiwKICAgICAgInNpemVzIjogIjE5MngxOTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9zdmcreG1sIgogICAgfQogIF0KfQ==">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .week-info {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 20px;
+            border-radius: 20px;
+            display: inline-block;
+            backdrop-filter: blur(10px);
+        }
+
+        .settings-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .settings-section h2 {
+            margin-bottom: 15px;
+            color: #4F46E5;
+        }
+
+        .name-inputs {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .name-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .name-input label {
+            min-width: 80px;
+            font-weight: 500;
+        }
+
+        .name-input input {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .name-input input:focus {
+            outline: none;
+            border-color: #4F46E5;
+        }
+
+        .rotation-day {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .rotation-day label {
+            font-weight: 500;
+        }
+
+        .rotation-day select {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+        }
+
+        .chores-grid {
+            display: grid;
+            gap: 15px;
+        }
+
+        .chore-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s;
+        }
+
+        .chore-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .chore-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .chore-icon {
+            font-size: 2em;
+        }
+
+        .chore-name {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #4F46E5;
+        }
+
+        .assigned-to {
+            font-size: 1.1em;
+            color: #666;
+            margin-left: 40px;
+        }
+
+        .assigned-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .install-prompt {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        .install-button {
+            background: #4F46E5;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .install-button:hover {
+            background: #4338CA;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .chore-name {
+                font-size: 1.1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏠 Chores Roster</h1>
+            <div class="week-info">
+                Week of <span id="weekDate"></span>
+            </div>
+        </div>
+
+        <div id="installPrompt" class="install-prompt hidden">
+            <p>📱 Add this app to your home screen for easy access!</p>
+            <button id="installButton" class="install-button">Install App</button>
+        </div>
+
+        <div class="settings-section">
+            <h2>👥 People</h2>
+            <div class="name-inputs">
+                <div class="name-input">
+                    <label>Person 1:</label>
+                    <input type="text" id="person1" placeholder="Enter name">
+                </div>
+                <div class="name-input">
+                    <label>Person 2:</label>
+                    <input type="text" id="person2" placeholder="Enter name">
+                </div>
+                <div class="name-input">
+                    <label>Person 3:</label>
+                    <input type="text" id="person3" placeholder="Enter name">
+                </div>
+                <div class="name-input">
+                    <label>Person 4:</label>
+                    <input type="text" id="person4" placeholder="Enter name">
+                </div>
+            </div>
+            <div class="rotation-day">
+                <label>Rotation day:</label>
+                <select id="rotationDay">
+                    <option value="0">Sunday</option>
+                    <option value="1">Monday</option>
+                    <option value="2">Tuesday</option>
+                    <option value="3">Wednesday</option>
+                    <option value="4">Thursday</option>
+                    <option value="5">Friday</option>
+                    <option value="6">Saturday</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="chores-grid" id="choresGrid"></div>
+    </div>
+
+    <script>
+        const chores = [
+            { name: 'Bins', icon: '🗑️' },
+            { name: 'Kitchen', icon: '🍽️' },
+            { name: 'Floors', icon: '🧹' },
+            { name: 'Toilets', icon: '🚽' }
+        ];
+
+        const people = ['Person 1', 'Person 2', 'Person 3', 'Person 4'];
+        let deferredPrompt;
+
+        function getWeekStart(rotationDay) {
+            const now = new Date();
+            const currentDay = now.getDay();
+            const diff = currentDay - rotationDay;
+            const weekStart = new Date(now);
+            
+            if (diff < 0) {
+                weekStart.setDate(now.getDate() - (7 + diff));
+            } else {
+                weekStart.setDate(now.getDate() - diff);
+            }
+            
+            weekStart.setHours(0, 0, 0, 0);
+            return weekStart;
+        }
+
+        function formatDate(date) {
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        function getWeekNumber(weekStart) {
+            const epochStart = new Date('2024-01-01');
+            const diff = weekStart - epochStart;
+            return Math.floor(diff / (7 * 24 * 60 * 60 * 1000));
+        }
+
+        function loadSettings() {
+            const savedNames = JSON.parse(localStorage.getItem('peopleNames') || 'null');
+            if (savedNames) {
+                savedNames.forEach((name, i) => {
+                    document.getElementById(`person${i + 1}`).value = name;
+                    people[i] = name;
+                });
+            }
+
+            const savedDay = localStorage.getItem('rotationDay');
+            if (savedDay !== null) {
+                document.getElementById('rotationDay').value = savedDay;
+            }
+        }
+
+        function saveSettings() {
+            const names = people.map((_, i) => {
+                const input = document.getElementById(`person${i + 1}`).value.trim();
+                return input || `Person ${i + 1}`;
+            });
+            localStorage.setItem('peopleNames', JSON.stringify(names));
+            localStorage.setItem('rotationDay', document.getElementById('rotationDay').value);
+        }
+
+        function renderChores() {
+            const rotationDay = parseInt(document.getElementById('rotationDay').value);
+            const weekStart = getWeekStart(rotationDay);
+            const weekNumber = getWeekNumber(weekStart);
+            
+            document.getElementById('weekDate').textContent = formatDate(weekStart);
+
+            const grid = document.getElementById('choresGrid');
+            grid.innerHTML = '';
+
+            chores.forEach((chore, index) => {
+                const personIndex = (weekNumber + index) % 4;
+                const card = document.createElement('div');
+                card.className = 'chore-card';
+                card.innerHTML = `
+                    <div class="chore-header">
+                        <span class="chore-icon">${chore.icon}</span>
+                        <span class="chore-name">${chore.name}</span>
+                    </div>
+                    <div class="assigned-to">
+                        Assigned to: <span class="assigned-name">${people[personIndex]}</span>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Event listeners for settings
+        for (let i = 1; i <= 4; i++) {
+            document.getElementById(`person${i}`).addEventListener('input', (e) => {
+                people[i - 1] = e.target.value.trim() || `Person ${i}`;
+                saveSettings();
+                renderChores();
+            });
+        }
+
+        document.getElementById('rotationDay').addEventListener('change', () => {
+            saveSettings();
+            renderChores();
+        });
+
+        // PWA Install
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('installPrompt').classList.remove('hidden');
+        });
+
+        document.getElementById('installButton').addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                deferredPrompt = null;
+                document.getElementById('installPrompt').classList.add('hidden');
+            }
+        });
+
+        // Initialize
+        loadSettings();
+        renderChores();
+
+        // Update weekly
+        setInterval(() => {
+            renderChores();
+        }, 60000); // Check every minute
+    </script>
+</body>
+</html>
