@@ -39,10 +39,65 @@
 
         .week-info {
             background: rgba(255, 255, 255, 0.2);
-            padding: 10px 20px;
+            padding: 15px 25px;
             border-radius: 20px;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 20px;
             backdrop-filter: blur(10px);
+        }
+
+        .week-nav {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .week-nav-button {
+            background: rgba(255, 255, 255, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .week-nav-button:hover {
+            background: rgba(255, 255, 255, 0.5);
+            transform: scale(1.1);
+        }
+
+        .week-nav-button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .week-nav-button:disabled:hover {
+            transform: none;
+        }
+
+        .week-dates {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 200px;
+        }
+
+        .week-range {
+            font-size: 0.95em;
+            font-weight: 600;
+        }
+
+        .current-week-badge {
+            font-size: 0.75em;
+            margin-top: 3px;
+            opacity: 0.9;
         }
 
         .notification-section {
@@ -192,7 +247,14 @@
         <div class="header">
             <h1>🏠 Chores Roster</h1>
             <div class="week-info">
-                Week of <span id="weekDate"></span>
+                <div class="week-nav">
+                    <button id="prevWeek" class="week-nav-button">←</button>
+                    <div class="week-dates">
+                        <div class="week-range" id="weekRange"></div>
+                        <div class="current-week-badge" id="currentWeekBadge"></div>
+                    </div>
+                    <button id="nextWeek" class="week-nav-button">→</button>
+                </div>
             </div>
         </div>
 
@@ -213,16 +275,17 @@
     <script>
         const chores = [
             { name: 'Bins', icon: '🗑️' },
-            { name: 'Toilets', icon: '🚽' }
-            { name: 'Floors', icon: '🧹' },
+            { name: 'Toilets', icon: '🚽' },
             { name: 'Kitchen', icon: '🍽️' },
+            { name: 'Floors', icon: '🧹' },
         ];
 
-        const people = ['Chris', 'Sean', 'Luke', 'Jonathan'];
-        const rotationDay = 0; // Sunday
+        const people = ['Sean', 'Luke', 'Jonathan', 'Chris'];
+        const rotationDay = 1; // Monday
         let deferredPrompt;
+        let weekOffset = 0; // 0 = current week, -1 = previous week, +1 = next week
 
-        function getWeekStart(rotationDay) {
+        function getWeekStart(offset = 0) {
             const now = new Date();
             const currentDay = now.getDay();
             const diff = currentDay - rotationDay;
@@ -234,12 +297,31 @@
                 weekStart.setDate(now.getDate() - diff);
             }
             
+            // Apply week offset
+            weekStart.setDate(weekStart.getDate() + (offset * 7));
+            
             weekStart.setHours(0, 0, 0, 0);
             return weekStart;
         }
 
+        function getWeekEnd(weekStart) {
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekStart.getDate() + 6);
+            return weekEnd;
+        }
+
         function formatDate(date) {
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+
+        function formatDateWithYear(date) {
             return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        function isCurrentWeek(weekStart) {
+            const today = new Date();
+            const currentWeekStart = getWeekStart(0);
+            return weekStart.getTime() === currentWeekStart.getTime();
         }
 
         function getWeekNumber(weekStart) {
@@ -249,10 +331,41 @@
         }
 
         function renderChores() {
-            const weekStart = getWeekStart(rotationDay);
+            const weekStart = getWeekStart(weekOffset);
+            const weekEnd = getWeekEnd(weekStart);
             const weekNumber = getWeekNumber(weekStart);
             
-            document.getElementById('weekDate').textContent = formatDate(weekStart);
+            // Update week range display
+            const weekRange = document.getElementById('weekRange');
+            const startMonth = weekStart.getMonth();
+            const endMonth = weekEnd.getMonth();
+            const startYear = weekStart.getFullYear();
+            const endYear = weekEnd.getFullYear();
+            
+            // Format range intelligently
+            if (startYear !== endYear) {
+                weekRange.textContent = `${formatDateWithYear(weekStart)} - ${formatDateWithYear(weekEnd)}`;
+            } else if (startMonth !== endMonth) {
+                weekRange.textContent = `${formatDate(weekStart)} - ${formatDate(weekEnd)}, ${startYear}`;
+            } else {
+                weekRange.textContent = `${formatDate(weekStart)} - ${weekEnd.getDate()}, ${startYear}`;
+            }
+            
+            // Update current week badge
+            const badge = document.getElementById('currentWeekBadge');
+            if (isCurrentWeek(weekStart)) {
+                badge.textContent = '(Current Week)';
+                badge.style.display = 'block';
+            } else {
+                badge.style.display = 'none';
+            }
+
+            // Update navigation buttons
+            const today = new Date();
+            const futureLimit = new Date(today);
+            futureLimit.setDate(today.getDate() + 365); // Can view up to 1 year ahead
+            
+            document.getElementById('nextWeek').disabled = weekEnd >= futureLimit;
 
             const grid = document.getElementById('choresGrid');
             grid.innerHTML = '';
@@ -338,7 +451,7 @@
         }
 
         function sendWeeklyNotifications() {
-            const weekStart = getWeekStart(rotationDay);
+            const weekStart = getWeekStart(0);
             const weekNumber = getWeekNumber(weekStart);
 
             // Find who has bins this week
@@ -361,6 +474,17 @@
                 });
             }, 2000);
         }
+
+        // Week navigation
+        document.getElementById('prevWeek').addEventListener('click', () => {
+            weekOffset--;
+            renderChores();
+        });
+
+        document.getElementById('nextWeek').addEventListener('click', () => {
+            weekOffset++;
+            renderChores();
+        });
 
         // Notification button listener
         document.getElementById('enableNotifications').addEventListener('click', requestNotificationPermission);
